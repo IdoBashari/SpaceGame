@@ -1,14 +1,8 @@
 package com.example.spacegamefinal.Logic;
 
-
-
-
-
 import android.util.Log;
 import android.widget.FrameLayout;
-
 import androidx.appcompat.widget.AppCompatImageView;
-
 import java.util.Arrays;
 import java.util.Random;
 
@@ -25,18 +19,12 @@ public class GameManager {
     private int lives;
     private int rowsMoved;
 
-    private FrameLayout[] lanes;
-    private AppCompatImageView spaceship;
-    private AppCompatImageView[] hearts;
 
     public GameManager() {
-        // Default constructor
     }
 
+
     public GameManager(FrameLayout[] lanes, AppCompatImageView spaceship, AppCompatImageView[] hearts) {
-        this.lanes = lanes;
-        this.spaceship = spaceship;
-        this.hearts = hearts;
         this.spaceshipRow = GRID_ROWS - 1;
         this.spaceshipCol = 1;
         this.lives = 3;
@@ -126,7 +114,33 @@ public class GameManager {
     public void reset() {
         Log.d("GameManager", "Resetting game");
         lives = 3;
+        spaceshipCol = 1;
+        rowsMoved = 0;
         initGrid();
     }
-}
 
+    public void updateGame() {
+        moveObstaclesDown();
+    }
+
+    public void handleCollision() {
+        decreaseLife();
+        ensureSpaceshipPosition();
+    }
+
+    public boolean isGameOver() {
+        return lives <= 0;
+    }
+
+    public void gameOver() {
+        reset();
+    }
+
+    public void refreshGameState() {
+        int[][] updatedGrid = new int[GRID_ROWS][GRID_COLS];
+        for (int i = 0; i < GRID_ROWS; i++) {
+            System.arraycopy(grid[i], 0, updatedGrid[i], 0, GRID_COLS);
+        }
+        grid = updatedGrid;
+    }
+}

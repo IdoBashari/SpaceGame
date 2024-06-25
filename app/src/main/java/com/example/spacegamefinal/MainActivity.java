@@ -1,9 +1,5 @@
 package com.example.spacegamefinal;
 
-
-
-
-
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
@@ -87,47 +83,42 @@ public class MainActivity extends AppCompatActivity {
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
-                handler.post(() -> updateGame());
+                handler.post(() -> {
+                    gameManager.updateGame();
+                    if (gameManager.checkCollision()) {
+                        handleCollision();
+                    }
+                    refreshUI();
+                });
             }
         }, 0, 700);
     }
 
-    private void updateGame() {
-        Log.d("Game", "Updating game state");
-        gameManager.moveObstaclesDown();
-        if (gameManager.checkCollision()) {
-            Log.d("Game", "Collision detected");
-            handleCollision();
-        }
-        refreshUI();
-    }
-
     private void handleCollision() {
         Log.d("Game", "Handling collision");
-        gameManager.decreaseLife();
+        gameManager.handleCollision();
         vibrator.vibrate(500);
-        if (gameManager.getLives() <= 0) {
+        if (gameManager.isGameOver()) {
             gameOver();
         } else {
             Toast.makeText(this, "Crash!", Toast.LENGTH_SHORT).show();
         }
-        gameManager.ensureSpaceshipPosition();
-        refreshUI();
-        Log.d("Game", "Collision handled, lives remaining: " + gameManager.getLives());
     }
 
     private void gameOver() {
         Log.d("Game", "Game over");
         Toast.makeText(this, "Game Over!", Toast.LENGTH_SHORT).show();
-        gameManager.reset();
+        gameManager.gameOver();
         refreshUI();
     }
 
     public void refreshUI() {
         Log.d("Game", "Refreshing UI");
+        gameManager.refreshGameState();
         int lives = gameManager.getLives();
-        for (int i = 0; i < main_IMG_hearts.length; i++) {
-            main_IMG_hearts[i].setVisibility(i < lives ? View.VISIBLE : View.INVISIBLE);
+        for (int i = main_IMG_hearts.length - 1; i >= 0; i--) {
+
+            main_IMG_hearts[i].setVisibility(main_IMG_hearts.length - i <= lives ? View.VISIBLE : View.INVISIBLE);
         }
 
         for (FrameLayout lane : lanes) {
