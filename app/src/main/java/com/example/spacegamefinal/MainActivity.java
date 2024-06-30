@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     private Timer timer;
     private Handler handler = new Handler();
     private Vibrator vibrator;
+    private boolean isGamePaused = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +80,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startGame() {
+        if (timer != null) {
+            timer.cancel();
+        }
         timer = new Timer();
         timer.schedule(new TimerTask() {
             @Override
@@ -117,7 +121,6 @@ public class MainActivity extends AppCompatActivity {
         gameManager.refreshGameState();
         int lives = gameManager.getLives();
         for (int i = main_IMG_hearts.length - 1; i >= 0; i--) {
-
             main_IMG_hearts[i].setVisibility(main_IMG_hearts.length - i <= lives ? View.VISIBLE : View.INVISIBLE);
         }
 
@@ -162,5 +165,46 @@ public class MainActivity extends AppCompatActivity {
                 100
         ));
         return obstacle;
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        pauseGame();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (isGamePaused) {
+            resumeGame();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        stopGame();
+    }
+
+    private void pauseGame() {
+        if (timer != null) {
+            timer.cancel();
+        }
+        isGamePaused = true;
+    }
+
+    private void resumeGame() {
+        if (isGamePaused) {
+            startGame();
+            isGamePaused = false;
+        }
+    }
+
+    private void stopGame() {
+        if (timer != null) {
+            timer.cancel();
+            timer = null;
+        }
     }
 }

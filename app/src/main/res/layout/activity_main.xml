@@ -5,7 +5,9 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:background="@drawable/background"
+    >
 
 
     <androidx.appcompat.widget.LinearLayoutCompat
@@ -47,8 +49,7 @@
         android:id="@+id/main_IMG_hearts"
         android:layout_width="@dimen/hearts_width"
         android:layout_height="@dimen/heart_dimention"
-        android:layout_marginEnd="11dp"
-        android:layout_marginTop="16dp"
+        android:layout_margin="10dp"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
         >
@@ -116,6 +117,12 @@
                 android:layout_gravity="bottom|center"
                 app:srcCompat="@drawable/space_ship"
                 />
+
+            <androidx.appcompat.widget.AppCompatImageView
+                android:id="@+id/main_star"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                app:srcCompat="@drawable/star" />
         </FrameLayout>
 
         <FrameLayout
@@ -130,6 +137,17 @@
 
     </LinearLayout>
 
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/score_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:text="Score: 0"
+        android:textSize="24sp"
+        android:textColor="@color/white"
+        android:background="@color/purpel"
+        android:layout_margin="10dp" />
 
 
 </RelativeLayout>
