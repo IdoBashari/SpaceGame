@@ -8,11 +8,15 @@ import android.util.Log;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.Toast;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageView;
 
+import com.example.spacegamefinal.Interfaces.MoveCallback;
 import com.example.spacegamefinal.Logic.GameManager;
+import com.example.spacegamefinal.Utilities.MoveDetector;
+import com.example.spacegamefinal.Utilities.SoundPlayer;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.Timer;
@@ -25,6 +29,7 @@ public class MainActivity extends AppCompatActivity {
     private AppCompatImageView main_IMG_space_ship;
     private AppCompatImageView[] main_IMG_hearts;
     private FrameLayout[] lanes;
+    private TextView main_score;
 
     private GameManager gameManager;
     private Timer timer;
@@ -32,19 +37,21 @@ public class MainActivity extends AppCompatActivity {
     private Vibrator vibrator;
     private boolean isGamePaused = false;
 
+    private SoundPlayer soundPlayer;
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
-
+        soundPlayer = new SoundPlayer(this);
         findViews();
         initViews();
-
-        gameManager = new GameManager(lanes, main_IMG_space_ship, main_IMG_hearts);
-
+        gameManager = new GameManager(lanes, main_IMG_space_ship, main_IMG_hearts,soundPlayer);
         startGame();
+        soundPlayer.playBackgroundMusic(R.raw.lost_in_space);
     }
 
     private void findViews() {
@@ -60,10 +67,14 @@ public class MainActivity extends AppCompatActivity {
         };
 
         lanes = new FrameLayout[]{
-                findViewById(R.id.main_Left_line),
-                findViewById(R.id.main_Middle_line),
-                findViewById(R.id.main_Right_line)
+                findViewById(R.id.main_first_line),
+                findViewById(R.id.main_second_line),
+                findViewById(R.id.main_third_line),
+                findViewById(R.id.main_fourth_line),
+                findViewById(R.id.main_fifth_line)
         };
+
+        main_score = findViewById(R.id.main_score);
     }
 
     private void initViews() {
@@ -95,13 +106,14 @@ public class MainActivity extends AppCompatActivity {
                     refreshUI();
                 });
             }
-        }, 0, 700);
+        }, 0, 800);
     }
 
     private void handleCollision() {
         Log.d("Game", "Handling collision");
         gameManager.handleCollision();
         vibrator.vibrate(500);
+
         if (gameManager.isGameOver()) {
             gameOver();
         } else {
@@ -114,6 +126,7 @@ public class MainActivity extends AppCompatActivity {
         Toast.makeText(this, "Game Over!", Toast.LENGTH_SHORT).show();
         gameManager.gameOver();
         refreshUI();
+        soundPlayer.stopBackgroundMusic();
     }
 
     public void refreshUI() {
@@ -135,9 +148,13 @@ public class MainActivity extends AppCompatActivity {
             for (int col = 0; col < grid[row].length; col++) {
                 if (grid[row][col] == GameManager.OBSTACLE) {
                     addViewToLane(createObstacleView(), col, row, false);
+                } else if (grid[row][col] == GameManager.STAR) {
+                    addViewToLane(createStarView(), col, row, false);
                 }
             }
         }
+
+        main_score.setText(String.format("%03d", gameManager.getScore()));
     }
 
     private void addViewToLane(View view, int laneIndex, int rowIndex, boolean isSpaceship) {
@@ -161,10 +178,20 @@ public class MainActivity extends AppCompatActivity {
         AppCompatImageView obstacle = new AppCompatImageView(this);
         obstacle.setImageResource(R.drawable.asteroid);
         obstacle.setLayoutParams(new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
+                100,
                 100
         ));
         return obstacle;
+    }
+
+    private AppCompatImageView createStarView() {
+        AppCompatImageView star = new AppCompatImageView(this);
+        star.setImageResource(R.drawable.star);
+        star.setLayoutParams(new FrameLayout.LayoutParams(
+                100,
+                100
+        ));
+        return star;
     }
 
     @Override
@@ -185,6 +212,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onStop() {
         super.onStop();
         stopGame();
+        soundPlayer.stopAllSounds();
     }
 
     private void pauseGame() {
@@ -207,4 +235,27 @@ public class MainActivity extends AppCompatActivity {
             timer = null;
         }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
+
+

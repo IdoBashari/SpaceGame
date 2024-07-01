@@ -86,11 +86,11 @@
         android:orientation="horizontal"
         android:layout_below="@id/main_IMG_hearts"
         android:layout_above="@id/main_BTNS"
-        android:weightSum="3">
+        android:weightSum="5">
 
 
         <FrameLayout
-            android:id="@+id/main_Left_line"
+            android:id="@+id/main_first_line"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -104,29 +104,47 @@
         </FrameLayout>
 
         <FrameLayout
-            android:id="@+id/main_Middle_line"
+            android:id="@+id/main_second_line"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
             >
 
-            <androidx.appcompat.widget.AppCompatImageView
-                android:id="@+id/main_space_ship"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_gravity="bottom|center"
-                app:srcCompat="@drawable/space_ship"
-                />
+
 
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/main_star"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 app:srcCompat="@drawable/star" />
+
+
         </FrameLayout>
 
         <FrameLayout
-            android:id="@+id/main_Right_line"
+            android:id="@+id/main_third_line"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            >
+
+        <androidx.appcompat.widget.AppCompatImageView
+            android:id="@+id/main_space_ship"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_gravity="bottom|center"
+            app:srcCompat="@drawable/space_ship"
+            />
+     </FrameLayout>
+
+        <FrameLayout
+            android:id="@+id/main_fourth_line"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            />
+        <FrameLayout
+            android:id="@+id/main_fifth_line"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -134,20 +152,20 @@
 
 
 
-
     </LinearLayout>
 
     <com.google.android.material.textview.MaterialTextView
-        android:id="@+id/score_text"
+        android:id="@+id/main_score"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
         android:layout_alignParentStart="true"
-        android:text="Score: 0"
-        android:textSize="24sp"
+        android:layout_margin="10dp"
+        android:layout_above="@id/roadLayout"
         android:textColor="@color/white"
-        android:background="@color/purpel"
-        android:layout_margin="10dp" />
+        android:textSize="34sp"
+        android:textStyle="bold"
+        tools:text="000" />
 
 
 </RelativeLayout>

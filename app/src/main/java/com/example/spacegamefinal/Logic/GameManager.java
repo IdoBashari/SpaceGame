@@ -3,33 +3,39 @@ package com.example.spacegamefinal.Logic;
 import android.util.Log;
 import android.widget.FrameLayout;
 import androidx.appcompat.widget.AppCompatImageView;
+
+import com.example.spacegamefinal.R;
+import com.example.spacegamefinal.Utilities.SoundPlayer;
+
 import java.util.Arrays;
 import java.util.Random;
 
 public class GameManager {
     public static final int GRID_ROWS = 10;
-    public static final int GRID_COLS = 3;
+    public static final int GRID_COLS = 5;
     public static final int EMPTY = 0;
     public static final int SPACESHIP = 1;
     public static final int OBSTACLE = 2;
+    public static final int STAR = 3;
+
+    private static final int STAR_GENERATION_CHANCE = 4; // 30% chance for a star
 
     private int[][] grid;
     private int spaceshipRow;
     private int spaceshipCol;
     private int lives;
     private int rowsMoved;
+    private int score;
+    private SoundPlayer soundPlayer;
 
-
-    public GameManager() {
-    }
-
-
-    public GameManager(FrameLayout[] lanes, AppCompatImageView spaceship, AppCompatImageView[] hearts) {
+    public GameManager(FrameLayout[] lanes, AppCompatImageView spaceship, AppCompatImageView[] hearts, SoundPlayer soundPlayer) {
         this.spaceshipRow = GRID_ROWS - 1;
         this.spaceshipCol = 1;
         this.lives = 3;
         this.rowsMoved = 0;
+        this.score = 0;
         this.grid = new int[GRID_ROWS][GRID_COLS];
+        this.soundPlayer = soundPlayer;  // הוסף זאת
         initGrid();
     }
 
@@ -69,25 +75,36 @@ public class GameManager {
 
         rowsMoved++;
         if (rowsMoved >= 2) {
-            generateNewObstacle();
+            generateNewObject();
             rowsMoved = 0;
         }
+
+        score += 10;
     }
 
-    private void generateNewObstacle() {
+    private void generateNewObject() {
         Random random = new Random();
         int randomCol = random.nextInt(GRID_COLS);
-        grid[0][randomCol] = OBSTACLE;
+        int randomObject = random.nextInt(10) < STAR_GENERATION_CHANCE ? STAR : OBSTACLE;
+        grid[0][randomCol] = randomObject;
     }
 
     public boolean checkCollision() {
-        boolean collision = grid[spaceshipRow][spaceshipCol] == OBSTACLE;
+        int collidedObject = grid[spaceshipRow][spaceshipCol];
+        boolean collision = collidedObject == OBSTACLE || collidedObject == STAR;
         if (collision) {
             Log.d("GameManager", "Collision detected at (" + spaceshipRow + ", " + spaceshipCol + ")");
+            if (collidedObject == OBSTACLE) {
+                soundPlayer.playSound(R.raw.asteroid_sound);
+            } else if (collidedObject == STAR) {
+                score += 100;
+                grid[spaceshipRow][spaceshipCol] = EMPTY;
+                soundPlayer.playSound(R.raw.star_sound);
+            }
         } else {
             Log.d("GameManager", "No collision at (" + spaceshipRow + ", " + spaceshipCol + ")");
         }
-        return collision;
+        return collidedObject == OBSTACLE;
     }
 
     public int getLives() {
@@ -111,11 +128,16 @@ public class GameManager {
         return spaceshipCol;
     }
 
+    public int getScore() {
+        return score;
+    }
+
     public void reset() {
         Log.d("GameManager", "Resetting game");
         lives = 3;
         spaceshipCol = 1;
         rowsMoved = 0;
+        score = 0;
         initGrid();
     }
 
