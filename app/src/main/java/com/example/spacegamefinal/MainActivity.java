@@ -1,23 +1,30 @@
 package com.example.spacegamefinal;
 
-import android.app.AlertDialog;
-import android.content.Context;
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Vibrator;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.FrameLayout;
-import android.widget.Toast;
 import android.widget.TextView;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.AppCompatImageView;
+import androidx.core.app.ActivityCompat;
 
 import com.example.spacegamefinal.Interfaces.MoveCallback;
 import com.example.spacegamefinal.Logic.GameManager;
 import com.example.spacegamefinal.Utilities.MoveDetector;
 import com.example.spacegamefinal.Utilities.SoundPlayer;
+import com.example.spacegamefinal.managers.ScoreManager;
+import com.example.spacegamefinal.models.Score;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.Timer;
@@ -45,6 +52,9 @@ public class MainActivity extends AppCompatActivity {
     private static final int QUICK_GAME_INTERVAL = 500;
     private static final int SLOW_GAME_INTERVAL = 1000;
 
+    private FusedLocationProviderClient fusedLocationClient;
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
 
         gameMode = getIntent().getStringExtra("GAME_MODE");
 
-        vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
+        vibrator = (Vibrator) getSystemService(VIBRATOR_SERVICE);
         soundPlayer = new SoundPlayer(this);
         findViews();
         initViews();
@@ -63,6 +73,8 @@ public class MainActivity extends AppCompatActivity {
         } else {
             initButtonMode();
         }
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         startGame();
         soundPlayer.playBackgroundMusic(R.raw.lost_in_space);
@@ -152,25 +164,56 @@ public class MainActivity extends AppCompatActivity {
     private void gameOver() {
         Log.d("Game", "Game over");
         runOnUiThread(() -> {
-            Toast.makeText(this, "Game Over!", Toast.LENGTH_SHORT).show();
             stopGame();
             soundPlayer.stopBackgroundMusic();
-            showGameOverDialog();
+            showNameInputDialog();
         });
     }
 
-    private void showGameOverDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle("Game Over")
-                .setMessage("Your score: " + gameManager.getScore())
-                .setPositiveButton("Restart", (dialog, which) -> {
-                    gameManager.reset();
-                    startGame();
-                    soundPlayer.playBackgroundMusic(R.raw.lost_in_space);
-                })
-                .setNegativeButton("Exit", (dialog, which) -> finish())
-                .setCancelable(false)
-                .show();
+    private void showNameInputDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Game Over");
+        final EditText input = new EditText(this);
+        builder.setView(input);
+        builder.setPositiveButton("OK", (dialog, which) -> {
+            String playerName = input.getText().toString();
+            saveScore(playerName, gameManager.getScore());
+        });
+        builder.show();
+    }
+
+    private void saveScore(String playerName, int score) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
+        } else {
+            getLocationAndSaveScore(playerName, score);
+        }
+    }
+
+    private void getLocationAndSaveScore(String playerName, int score) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, location -> {
+                    if (location != null) {
+                        Score newScore = new Score(score, playerName, location.getLatitude(), location.getLongitude());
+                        ScoreManager.getInstance(this).addScore(newScore);
+                    } else {
+                        Score newScore = new Score(score, playerName, 0, 0);
+                        ScoreManager.getInstance(this).addScore(newScore);
+                    }
+                    Intent intent = new Intent(MainActivity.this, ScoreboardActivity.class);
+                    startActivity(intent);
+                    finish();
+                });
     }
 
     public void refreshUI() {
@@ -221,20 +264,14 @@ public class MainActivity extends AppCompatActivity {
     private AppCompatImageView createObstacleView() {
         AppCompatImageView obstacle = new AppCompatImageView(this);
         obstacle.setImageResource(R.drawable.asteroid);
-        obstacle.setLayoutParams(new FrameLayout.LayoutParams(
-                100,
-                100
-        ));
+        obstacle.setLayoutParams(new FrameLayout.LayoutParams(100, 100));
         return obstacle;
     }
 
     private AppCompatImageView createStarView() {
         AppCompatImageView star = new AppCompatImageView(this);
         star.setImageResource(R.drawable.star);
-        star.setLayoutParams(new FrameLayout.LayoutParams(
-                100,
-                100
-        ));
+        star.setLayoutParams(new FrameLayout.LayoutParams(100, 100));
         return star;
     }
 
@@ -283,6 +320,22 @@ public class MainActivity extends AppCompatActivity {
         if (timer != null) {
             timer.cancel();
             timer = null;
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                saveScore("", gameManager.getScore());
+            } else {
+                Score newScore = new Score(gameManager.getScore(), "", 0, 0);
+                ScoreManager.getInstance(this).addScore(newScore);
+                Intent intent = new Intent(this, ScoreboardActivity.class);
+                startActivity(intent);
+                finish();
+            }
         }
     }
 }

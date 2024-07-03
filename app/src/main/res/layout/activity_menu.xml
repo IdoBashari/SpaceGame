@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/background">
 
-    <TextView
+    <com.google.android.material.textview.MaterialTextView
         android:id="@+id/game_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -15,7 +15,7 @@
         android:textStyle="bold"
         android:textColor="#FFFFFF"/>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/quick_game_button"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
@@ -24,7 +24,7 @@
         android:layout_marginTop="50dp"
         android:text="Quick Game"/>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/slow_game_button"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
@@ -33,7 +33,7 @@
         android:layout_marginTop="20dp"
         android:text="Slow Game"/>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/sensor_game_button"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
@@ -42,11 +42,20 @@
         android:layout_marginTop="20dp"
         android:text="Sensor Game"/>
 
-    <Button
-        android:id="@+id/exit_button"
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/scoreboard_button"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:layout_below="@id/sensor_game_button"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:text="Scoreboard"/>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/exit_button"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/scoreboard_button"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
         android:text="Exit"/>

@@ -12,6 +12,7 @@ public class MenuActivity extends AppCompatActivity {
     private Button quickGameButton;
     private Button slowGameButton;
     private Button sensorGameButton;
+    private Button scoreboardButton;
     private Button exitButton;
 
     @Override
@@ -22,6 +23,7 @@ public class MenuActivity extends AppCompatActivity {
         quickGameButton = findViewById(R.id.quick_game_button);
         slowGameButton = findViewById(R.id.slow_game_button);
         sensorGameButton = findViewById(R.id.sensor_game_button);
+        scoreboardButton = findViewById(R.id.scoreboard_button);
         exitButton = findViewById(R.id.exit_button);
 
         quickGameButton.setOnClickListener(new View.OnClickListener() {
@@ -42,6 +44,13 @@ public class MenuActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 startGame("SENSOR");
+            }
+        });
+
+        scoreboardButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MenuActivity.this, ScoreboardActivity.class));
             }
         });
 

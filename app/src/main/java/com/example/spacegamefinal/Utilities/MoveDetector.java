@@ -15,6 +15,8 @@ public class MoveDetector {
     private SensorEventListener sensorEventListener;
 
     private long timestamp = 0L;
+    private static final float MOVE_THRESHOLD = 2.0f;
+    private static final float MAX_TILT = 6.0f;
 
     private MoveCallback moveCallback;
 
@@ -35,7 +37,6 @@ public class MoveDetector {
 
             @Override
             public void onAccuracyChanged(Sensor sensor, int accuracy) {
-                // pass
             }
         };
     }
@@ -43,13 +44,15 @@ public class MoveDetector {
     private void calculateMove(float x) {
         if (System.currentTimeMillis() - timestamp > 500) {
             timestamp = System.currentTimeMillis();
-            if (x < -2.0) {
-                if (moveCallback != null) {
-                    moveCallback.moveRight();
-                }
-            } else if (x > 2.0) {
-                if (moveCallback != null) {
-                    moveCallback.moveLeft();
+            if (Math.abs(x) < MAX_TILT) {
+                if (x < -MOVE_THRESHOLD) {
+                    if (moveCallback != null) {
+                        moveCallback.moveRight();
+                    }
+                } else if (x > MOVE_THRESHOLD) {
+                    if (moveCallback != null) {
+                        moveCallback.moveLeft();
+                    }
                 }
             }
         }
