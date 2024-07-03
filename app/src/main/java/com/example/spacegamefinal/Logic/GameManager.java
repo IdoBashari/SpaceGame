@@ -18,7 +18,7 @@ public class GameManager {
     public static final int OBSTACLE = 2;
     public static final int STAR = 3;
 
-    private static final int STAR_GENERATION_CHANCE = 4; // 30% chance for a star
+    private static final int STAR_GENERATION_CHANCE = 4;
 
     private int[][] grid;
     private int spaceshipRow;
@@ -27,15 +27,23 @@ public class GameManager {
     private int rowsMoved;
     private int score;
     private SoundPlayer soundPlayer;
+    private int gameSpeed;
 
-    public GameManager(FrameLayout[] lanes, AppCompatImageView spaceship, AppCompatImageView[] hearts, SoundPlayer soundPlayer) {
+    public GameManager(FrameLayout[] lanes, AppCompatImageView spaceship, AppCompatImageView[] hearts, SoundPlayer soundPlayer, String gameMode) {
         this.spaceshipRow = GRID_ROWS - 1;
-        this.spaceshipCol = 1;
+        this.spaceshipCol = GRID_COLS / 2;
         this.lives = 3;
         this.rowsMoved = 0;
         this.score = 0;
         this.grid = new int[GRID_ROWS][GRID_COLS];
-        this.soundPlayer = soundPlayer;  // הוסף זאת
+        this.soundPlayer = soundPlayer;
+
+        if ("QUICK".equals(gameMode)) {
+            this.gameSpeed = 2;
+        } else {
+            this.gameSpeed = 1;
+        }
+
         initGrid();
     }
 
@@ -64,7 +72,16 @@ public class GameManager {
         grid[spaceshipRow][spaceshipCol] = SPACESHIP;
     }
 
-    public void moveObstaclesDown() {
+    public void updateGame() {
+        for (int i = 0; i < gameSpeed; i++) {
+            moveObstaclesDown();
+            if (checkCollision()) {
+                handleCollision();
+            }
+        }
+    }
+
+    private void moveObstaclesDown() {
         Log.d("GameManager", "Moving obstacles down");
 
         for (int row = GRID_ROWS - 2; row >= 0; row--) {
@@ -96,6 +113,7 @@ public class GameManager {
             Log.d("GameManager", "Collision detected at (" + spaceshipRow + ", " + spaceshipCol + ")");
             if (collidedObject == OBSTACLE) {
                 soundPlayer.playSound(R.raw.asteroid_sound);
+                return true;
             } else if (collidedObject == STAR) {
                 score += 100;
                 grid[spaceshipRow][spaceshipCol] = EMPTY;
@@ -104,7 +122,7 @@ public class GameManager {
         } else {
             Log.d("GameManager", "No collision at (" + spaceshipRow + ", " + spaceshipCol + ")");
         }
-        return collidedObject == OBSTACLE;
+        return false;
     }
 
     public int getLives() {
@@ -135,14 +153,10 @@ public class GameManager {
     public void reset() {
         Log.d("GameManager", "Resetting game");
         lives = 3;
-        spaceshipCol = 1;
+        spaceshipCol = GRID_COLS / 2;
         rowsMoved = 0;
         score = 0;
         initGrid();
-    }
-
-    public void updateGame() {
-        moveObstaclesDown();
     }
 
     public void handleCollision() {

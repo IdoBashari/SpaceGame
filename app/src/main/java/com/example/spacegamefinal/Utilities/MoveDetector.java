@@ -14,9 +14,7 @@ public class MoveDetector {
     private Sensor sensor;
     private SensorEventListener sensorEventListener;
 
-    private int moveCountX = 0;
-    private int moveCountY = 0;
-    private long timestamp = 0l;
+    private long timestamp = 0L;
 
     private MoveCallback moveCallback;
 
@@ -27,44 +25,31 @@ public class MoveDetector {
         initEventListener();
     }
 
-
-    public int getMoveCountX() {
-        return moveCountX;
-    }
-
-    public int getMoveCountY() {
-        return moveCountY;
-    }
-
     private void initEventListener() {
         sensorEventListener = new SensorEventListener() {
             @Override
             public void onSensorChanged(SensorEvent event) {
                 float x = event.values[0];
-                float y = event.values[1];
-                calculateMove(x, y);
+                calculateMove(x);
             }
 
             @Override
             public void onAccuracyChanged(Sensor sensor, int accuracy) {
-                //pass
+                // pass
             }
         };
     }
 
-    private void calculateMove(float x, float y) {
+    private void calculateMove(float x) {
         if (System.currentTimeMillis() - timestamp > 500) {
             timestamp = System.currentTimeMillis();
-            if (x > 6.0) {
-                moveCountX++;
+            if (x < -2.0) {
                 if (moveCallback != null) {
-                    moveCallback.moveX();
+                    moveCallback.moveRight();
                 }
-            }
-            if (y > 6.0) {
-                moveCountY++;
+            } else if (x > 2.0) {
                 if (moveCallback != null) {
-                    moveCallback.moveY();
+                    moveCallback.moveLeft();
                 }
             }
         }

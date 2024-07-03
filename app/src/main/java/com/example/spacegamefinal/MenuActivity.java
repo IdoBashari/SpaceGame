@@ -9,8 +9,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 public class MenuActivity extends AppCompatActivity {
 
-    private Button startButton;
-    private Button settingsButton;
+    private Button quickGameButton;
+    private Button slowGameButton;
+    private Button sensorGameButton;
     private Button exitButton;
 
     @Override
@@ -18,22 +19,29 @@ public class MenuActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_menu);
 
-        startButton = findViewById(R.id.start_button);
-        settingsButton = findViewById(R.id.settings_button);
+        quickGameButton = findViewById(R.id.quick_game_button);
+        slowGameButton = findViewById(R.id.slow_game_button);
+        sensorGameButton = findViewById(R.id.sensor_game_button);
         exitButton = findViewById(R.id.exit_button);
 
-        startButton.setOnClickListener(new View.OnClickListener() {
+        quickGameButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(MenuActivity.this, MainActivity.class);
-                startActivity(intent);
+                startGame("QUICK");
             }
         });
 
-        settingsButton.setOnClickListener(new View.OnClickListener() {
+        slowGameButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO: Implement settings functionality
+                startGame("SLOW");
+            }
+        });
+
+        sensorGameButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startGame("SENSOR");
             }
         });
 
@@ -43,5 +51,11 @@ public class MenuActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
+
+    private void startGame(String gameMode) {
+        Intent intent = new Intent(MenuActivity.this, MainActivity.class);
+        intent.putExtra("GAME_MODE", gameMode);
+        startActivity(intent);
     }
 }

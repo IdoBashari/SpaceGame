@@ -16,28 +16,37 @@
         android:textColor="#FFFFFF"/>
 
     <Button
-        android:id="@+id/start_button"
+        android:id="@+id/quick_game_button"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
         android:layout_below="@id/game_title"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="50dp"
-        android:text="Start Game"/>
+        android:text="Quick Game"/>
 
     <Button
-        android:id="@+id/settings_button"
+        android:id="@+id/slow_game_button"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:layout_below="@id/start_button"
+        android:layout_below="@id/quick_game_button"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
-        android:text="Settings"/>
+        android:text="Slow Game"/>
+
+    <Button
+        android:id="@+id/sensor_game_button"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/slow_game_button"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:text="Sensor Game"/>
 
     <Button
         android:id="@+id/exit_button"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:layout_below="@id/settings_button"
+        android:layout_below="@id/sensor_game_button"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"
         android:text="Exit"/>

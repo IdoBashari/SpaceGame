@@ -1,5 +1,6 @@
 package com.example.spacegamefinal;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
@@ -38,18 +39,31 @@ public class MainActivity extends AppCompatActivity {
     private boolean isGamePaused = false;
 
     private SoundPlayer soundPlayer;
+    private MoveDetector moveDetector;
 
-
+    private String gameMode;
+    private static final int QUICK_GAME_INTERVAL = 500;
+    private static final int SLOW_GAME_INTERVAL = 1000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        gameMode = getIntent().getStringExtra("GAME_MODE");
+
         vibrator = (Vibrator) getSystemService(Context.VIBRATOR_SERVICE);
         soundPlayer = new SoundPlayer(this);
         findViews();
         initViews();
-        gameManager = new GameManager(lanes, main_IMG_space_ship, main_IMG_hearts,soundPlayer);
+        gameManager = new GameManager(lanes, main_IMG_space_ship, main_IMG_hearts, soundPlayer, gameMode);
+
+        if ("SENSOR".equals(gameMode)) {
+            initSensorMode();
+        } else {
+            initButtonMode();
+        }
+
         startGame();
         soundPlayer.playBackgroundMusic(R.raw.lost_in_space);
     }
@@ -90,43 +104,73 @@ public class MainActivity extends AppCompatActivity {
         addViewToLane(main_IMG_space_ship, 1, GameManager.GRID_ROWS - 1, true);
     }
 
+    private void initSensorMode() {
+        main_BTN_left.setVisibility(View.GONE);
+        main_BTN_right.setVisibility(View.GONE);
+
+        moveDetector = new MoveDetector(this, new MoveCallback() {
+            @Override
+            public void moveLeft() {
+                gameManager.moveSpaceshipLeft();
+                refreshUI();
+            }
+
+            @Override
+            public void moveRight() {
+                gameManager.moveSpaceshipRight();
+                refreshUI();
+            }
+        });
+    }
+
+    private void initButtonMode() {
+        main_BTN_left.setVisibility(View.VISIBLE);
+        main_BTN_right.setVisibility(View.VISIBLE);
+    }
+
     private void startGame() {
         if (timer != null) {
             timer.cancel();
         }
         timer = new Timer();
+        int interval = "QUICK".equals(gameMode) ? QUICK_GAME_INTERVAL : SLOW_GAME_INTERVAL;
         timer.schedule(new TimerTask() {
             @Override
             public void run() {
                 handler.post(() -> {
                     gameManager.updateGame();
-                    if (gameManager.checkCollision()) {
-                        handleCollision();
+                    if (gameManager.isGameOver()) {
+                        gameOver();
+                    } else {
+                        refreshUI();
                     }
-                    refreshUI();
                 });
             }
-        }, 0, 800);
-    }
-
-    private void handleCollision() {
-        Log.d("Game", "Handling collision");
-        gameManager.handleCollision();
-        vibrator.vibrate(500);
-
-        if (gameManager.isGameOver()) {
-            gameOver();
-        } else {
-            Toast.makeText(this, "Crash!", Toast.LENGTH_SHORT).show();
-        }
+        }, 0, interval);
     }
 
     private void gameOver() {
         Log.d("Game", "Game over");
-        Toast.makeText(this, "Game Over!", Toast.LENGTH_SHORT).show();
-        gameManager.gameOver();
-        refreshUI();
-        soundPlayer.stopBackgroundMusic();
+        runOnUiThread(() -> {
+            Toast.makeText(this, "Game Over!", Toast.LENGTH_SHORT).show();
+            stopGame();
+            soundPlayer.stopBackgroundMusic();
+            showGameOverDialog();
+        });
+    }
+
+    private void showGameOverDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Game Over")
+                .setMessage("Your score: " + gameManager.getScore())
+                .setPositiveButton("Restart", (dialog, which) -> {
+                    gameManager.reset();
+                    startGame();
+                    soundPlayer.playBackgroundMusic(R.raw.lost_in_space);
+                })
+                .setNegativeButton("Exit", (dialog, which) -> finish())
+                .setCancelable(false)
+                .show();
     }
 
     public void refreshUI() {
@@ -198,6 +242,9 @@ public class MainActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         pauseGame();
+        if ("SENSOR".equals(gameMode)) {
+            moveDetector.stop();
+        }
     }
 
     @Override
@@ -205,6 +252,9 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         if (isGamePaused) {
             resumeGame();
+        }
+        if ("SENSOR".equals(gameMode)) {
+            moveDetector.start();
         }
     }
 
@@ -235,27 +285,4 @@ public class MainActivity extends AppCompatActivity {
             timer = null;
         }
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
-
-
