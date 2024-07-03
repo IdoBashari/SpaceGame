@@ -29,8 +29,6 @@ public class ScoreMapFragment extends Fragment implements OnMapReadyCallback {
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        // כאן תוכל להוסיף סימונים למפה עבור מיקומי השיאים
-        // לדוגמה:
         LatLng sydney = new LatLng(-34, 151);
         mMap.addMarker(new MarkerOptions().position(sydney).title("High Score Location"));
         mMap.moveCamera(CameraUpdateFactory.newLatLng(sydney));

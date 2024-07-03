@@ -76,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
+
         startGame();
         soundPlayer.playBackgroundMusic(R.raw.lost_in_space);
     }

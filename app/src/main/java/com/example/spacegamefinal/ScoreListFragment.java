@@ -47,4 +47,9 @@ public class ScoreListFragment extends Fragment {
     public interface OnScoreSelectedListener {
         void onScoreSelected(Score score);
     }
+
+    public void onResume() {
+        super.onResume();
+        updateScoreList();
+    }
 }
