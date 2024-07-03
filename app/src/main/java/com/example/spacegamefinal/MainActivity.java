@@ -55,6 +55,8 @@ public class MainActivity extends AppCompatActivity {
     private FusedLocationProviderClient fusedLocationClient;
     private static final int LOCATION_PERMISSION_REQUEST_CODE = 1;
 
+    private String currentPlayerName = "";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,7 +77,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-
 
         startGame();
         soundPlayer.playBackgroundMusic(R.raw.lost_in_space);
@@ -177,44 +178,63 @@ public class MainActivity extends AppCompatActivity {
         final EditText input = new EditText(this);
         builder.setView(input);
         builder.setPositiveButton("OK", (dialog, which) -> {
-            String playerName = input.getText().toString();
-            saveScore(playerName, gameManager.getScore());
+            currentPlayerName = input.getText().toString().trim();
+            if (currentPlayerName.isEmpty()) {
+                currentPlayerName = "Anonymous";
+            }
+            Log.d("ScoreDebug", "Player name entered: " + currentPlayerName);
+            saveScore(currentPlayerName, gameManager.getScore());
         });
+        builder.setCancelable(false);
         builder.show();
     }
 
     private void saveScore(String playerName, int score) {
+        Log.d("ScoreDebug", "Saving score: " + playerName + " - " + score);
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Log.d("ScoreDebug", "Location permission not granted, requesting...");
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_REQUEST_CODE);
         } else {
+            Log.d("ScoreDebug", "Location permission granted, getting location and saving score...");
             getLocationAndSaveScore(playerName, score);
         }
     }
 
     private void getLocationAndSaveScore(String playerName, int score) {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Log.d("ScoreDebug", "Location permissions not granted, saving score without location");
+            saveScoreWithoutLocation(playerName, score);
             return;
         }
         fusedLocationClient.getLastLocation()
                 .addOnSuccessListener(this, location -> {
+                    Log.d("ScoreDebug", "Location retrieved, saving score with location");
                     if (location != null) {
                         Score newScore = new Score(score, playerName, location.getLatitude(), location.getLongitude());
                         ScoreManager.getInstance(this).addScore(newScore);
                     } else {
-                        Score newScore = new Score(score, playerName, 0, 0);
-                        ScoreManager.getInstance(this).addScore(newScore);
+                        saveScoreWithoutLocation(playerName, score);
                     }
-                    Intent intent = new Intent(MainActivity.this, ScoreboardActivity.class);
-                    startActivity(intent);
-                    finish();
+                    navigateToScoreboard();
+                })
+                .addOnFailureListener(e -> {
+                    Log.d("ScoreDebug", "Failed to get location: " + e.getMessage());
+                    saveScoreWithoutLocation(playerName, score);
+                    navigateToScoreboard();
                 });
+    }
+
+    private void saveScoreWithoutLocation(String playerName, int score) {
+        Score newScore = new Score(score, playerName, 0, 0);
+        ScoreManager.getInstance(this).addScore(newScore);
+    }
+
+    private void navigateToScoreboard() {
+        Log.d("ScoreDebug", "Navigating to scoreboard");
+        Intent intent = new Intent(MainActivity.this, ScoreboardActivity.class);
+        startActivity(intent);
+        finish();
     }
 
     public void refreshUI() {
@@ -329,13 +349,12 @@ public class MainActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                saveScore("", gameManager.getScore());
+                Log.d("ScoreDebug", "Location permission granted in onRequestPermissionsResult");
+                saveScore(currentPlayerName, gameManager.getScore());
             } else {
-                Score newScore = new Score(gameManager.getScore(), "", 0, 0);
-                ScoreManager.getInstance(this).addScore(newScore);
-                Intent intent = new Intent(this, ScoreboardActivity.class);
-                startActivity(intent);
-                finish();
+                Log.d("ScoreDebug", "Location permission denied in onRequestPermissionsResult");
+                saveScoreWithoutLocation(currentPlayerName, gameManager.getScore());
+                navigateToScoreboard();
             }
         }
     }

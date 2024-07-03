@@ -1,6 +1,6 @@
 package com.example.spacegamefinal.models;
 
-public class Score {
+public class Score implements Comparable<Score> {
     private int score;
     private String playerName;
     private double latitude;
@@ -13,7 +13,6 @@ public class Score {
         this.longitude = longitude;
     }
 
-    // Getters
     public int getScore() {
         return score;
     }
@@ -30,24 +29,13 @@ public class Score {
         return longitude;
     }
 
-    // Setters
-    public void setScore(int score) {
-        this.score = score;
-    }
-
-    public void setPlayerName(String playerName) {
-        this.playerName = playerName;
-    }
-
-    public void setLatitude(double latitude) {
-        this.latitude = latitude;
-    }
-
-    public void setLongitude(double longitude) {
-        this.longitude = longitude;
-    }
-
+    @Override
     public String toString() {
         return playerName + ": " + score;
+    }
+
+    @Override
+    public int compareTo(Score other) {
+        return Integer.compare(other.score, this.score);
     }
 }

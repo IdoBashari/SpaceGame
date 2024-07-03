@@ -2,19 +2,23 @@ package com.example.spacegamefinal.managers;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
 
 import com.example.spacegamefinal.models.Score;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class ScoreManager {
+    private static final String TAG = "ScoreManager";
     private static final String PREFS_NAME = "ScorePrefs";
     private static final String SCORES_KEY = "Scores";
     private static final int MAX_SCORES = 10;
+
     private static ScoreManager instance;
     private List<Score> highScores;
     private Context context;
@@ -25,7 +29,7 @@ public class ScoreManager {
         loadScores();
     }
 
-    public static ScoreManager getInstance(Context context) {
+    public static synchronized ScoreManager getInstance(Context context) {
         if (instance == null) {
             instance = new ScoreManager(context);
         }
@@ -33,8 +37,13 @@ public class ScoreManager {
     }
 
     public void addScore(Score newScore) {
+        Log.d(TAG, "Adding new score: " + newScore.toString());
+        if (newScore.getPlayerName() == null || newScore.getPlayerName().isEmpty()) {
+            Log.d(TAG, "Player name is empty or null, using 'Anonymous'");
+            newScore = new Score(newScore.getScore(), "Anonymous", newScore.getLatitude(), newScore.getLongitude());
+        }
         highScores.add(newScore);
-        Collections.sort(highScores, (s1, s2) -> Integer.compare(s2.getScore(), s1.getScore()));
+        Collections.sort(highScores);
         if (highScores.size() > MAX_SCORES) {
             highScores = highScores.subList(0, MAX_SCORES);
         }
@@ -52,6 +61,9 @@ public class ScoreManager {
             Gson gson = new Gson();
             Type type = new TypeToken<ArrayList<Score>>() {}.getType();
             highScores = gson.fromJson(scoresJson, type);
+            Log.d(TAG, "Loaded scores: " + highScores.toString());
+        } else {
+            Log.d(TAG, "No saved scores found");
         }
     }
 
@@ -61,6 +73,13 @@ public class ScoreManager {
         Gson gson = new Gson();
         String scoresJson = gson.toJson(highScores);
         editor.putString(SCORES_KEY, scoresJson);
-        editor.apply();
+        boolean success = editor.commit();  // Using commit() instead of apply() for immediate writing
+        Log.d(TAG, "Saved scores: " + scoresJson + ", Success: " + success);
+    }
+
+    public void clearScores() {
+        highScores.clear();
+        saveScores();
+        Log.d(TAG, "Cleared all scores");
     }
 }
