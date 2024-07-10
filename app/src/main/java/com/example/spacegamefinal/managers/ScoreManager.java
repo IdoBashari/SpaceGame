@@ -73,7 +73,7 @@ public class ScoreManager {
         Gson gson = new Gson();
         String scoresJson = gson.toJson(highScores);
         editor.putString(SCORES_KEY, scoresJson);
-        boolean success = editor.commit();  // Using commit() instead of apply() for immediate writing
+        boolean success = editor.commit();
         Log.d(TAG, "Saved scores: " + scoresJson + ", Success: " + success);
     }
 

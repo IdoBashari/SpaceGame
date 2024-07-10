@@ -121,7 +121,7 @@ public class GameManager {
             Log.d("GameManager", "Collision detected at (" + spaceshipRow + ", " + spaceshipCol + ")");
             if (collidedObject == OBSTACLE) {
                 soundPlayer.playSound(R.raw.asteroid_sound);
-                vibrator.vibrate(500); // Vibrate for 500 milliseconds
+                vibrator.vibrate(500);
                 showToast("CRASH!");
                 return true;
             } else if (collidedObject == STAR) {
