@@ -10,7 +10,6 @@ This is an advanced version of the Space Game, featuring various game modes, sen
 - **Variable game speed based on game mode**
 - **Crash notification (toast message + vibration)**
 - **Three lives system**
-- **Endless game (resets to 3 lives after losing all)**
 - **Sound effects and background music**
 - **High score tracking with player names and locations**
 - **Google Maps integration for high score locations**
