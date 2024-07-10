@@ -1,7 +1,10 @@
 package com.example.spacegamefinal.Logic;
 
+import android.content.Context;
+import android.os.Vibrator;
 import android.util.Log;
 import android.widget.FrameLayout;
+import android.widget.Toast;
 import androidx.appcompat.widget.AppCompatImageView;
 
 import com.example.spacegamefinal.R;
@@ -29,7 +32,11 @@ public class GameManager {
     private SoundPlayer soundPlayer;
     private int gameSpeed;
 
-    public GameManager(FrameLayout[] lanes, AppCompatImageView spaceship, AppCompatImageView[] hearts, SoundPlayer soundPlayer, String gameMode) {
+    private Context context;
+    private Vibrator vibrator;
+
+    public GameManager(Context context, FrameLayout[] lanes, AppCompatImageView spaceship, AppCompatImageView[] hearts, SoundPlayer soundPlayer, String gameMode) {
+        this.context = context;
         this.spaceshipRow = GRID_ROWS - 1;
         this.spaceshipCol = GRID_COLS / 2;
         this.lives = 3;
@@ -37,6 +44,7 @@ public class GameManager {
         this.score = 0;
         this.grid = new int[GRID_ROWS][GRID_COLS];
         this.soundPlayer = soundPlayer;
+        this.vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
 
         if ("QUICK".equals(gameMode)) {
             this.gameSpeed = 2;
@@ -113,6 +121,8 @@ public class GameManager {
             Log.d("GameManager", "Collision detected at (" + spaceshipRow + ", " + spaceshipCol + ")");
             if (collidedObject == OBSTACLE) {
                 soundPlayer.playSound(R.raw.asteroid_sound);
+                vibrator.vibrate(500); // Vibrate for 500 milliseconds
+                showToast("CRASH!");
                 return true;
             } else if (collidedObject == STAR) {
                 score += 100;
@@ -123,6 +133,10 @@ public class GameManager {
             Log.d("GameManager", "No collision at (" + spaceshipRow + ", " + spaceshipCol + ")");
         }
         return false;
+    }
+
+    private void showToast(final String message) {
+        Toast.makeText(context, message, Toast.LENGTH_SHORT).show();
     }
 
     public int getLives() {

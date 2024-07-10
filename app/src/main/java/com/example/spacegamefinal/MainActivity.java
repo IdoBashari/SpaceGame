@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
         soundPlayer = new SoundPlayer(this);
         findViews();
         initViews();
-        gameManager = new GameManager(lanes, main_IMG_space_ship, main_IMG_hearts, soundPlayer, gameMode);
+        gameManager = new GameManager(this, lanes, main_IMG_space_ship, main_IMG_hearts, soundPlayer, gameMode);
 
         if ("SENSOR".equals(gameMode)) {
             initSensorMode();
